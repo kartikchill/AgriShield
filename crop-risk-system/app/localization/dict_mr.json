@@ -1,0 +1,12 @@
+{
+  "risk_status_safe": "सुरक्षित",
+  "risk_status_monitor": "निरीक्षण करा",
+  "risk_status_critical": "उच्च धोका (तातडीची कारवाई आवश्यक)",
+  "crop_cotton": "कापूस",
+  "crop_tomato": "टोमॅटो",
+  "pest_pink_bollworm": "गुलाबी बोंड अळी",
+  "pest_late_blight": "करपा",
+  "ipm_heading": "एकात्मिक कीड व्यवस्थापन",
+  "ppe_warning": "सुरक्षा किट (हातमोजे, मास्क) घालणे अनिवार्य आहे.",
+  "phi_warning": "फवारणीनंतर {days} दिवस पीक काढू नये."
+}

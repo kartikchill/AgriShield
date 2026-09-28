@@ -1,0 +1,10 @@
+- Implemented JWT-based authentication (Task 1)
+
+
+- Implemented User Profiles (Task 2)
+
+- Implemented Admin Dashboard (Task 3)
+----------
+ralph-done-ed86q
+----------
+ralph-done-qoyte

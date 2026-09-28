@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KVK Dashboard - Main</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#3c4a42",
+                        "inverse-on-surface": "#283044",
+                        "on-error": "#690005",
+                        "surface-container-high": "#222a3d",
+                        "surface-container": "#171f33",
+                        "inverse-primary": "#006c49",
+                        "on-secondary": "#002e6a",
+                        "tertiary": "#ffb3af",
+                        "outline": "#86948a",
+                        "secondary-container": "#0566d9",
+                        "primary": "#4edea3",
+                        "primary-fixed": "#6ffbbe",
+                        "inverse-surface": "#dae2fd",
+                        "on-primary-container": "#00422b",
+                        "tertiary-fixed-dim": "#ffb3af",
+                        "on-secondary-fixed": "#001a42",
+                        "on-background": "#dae2fd",
+                        "on-tertiary": "#650911",
+                        "primary-fixed-dim": "#4edea3",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "tertiary-container": "#fc7c78",
+                        "on-secondary-container": "#e6ecff",
+                        "on-primary-fixed": "#002113",
+                        "on-secondary-fixed-variant": "#004395",
+                        "error": "#ffb4ab",
+                        "background": "#0b1326",
+                        "on-primary": "#003824",
+                        "surface-tint": "#4edea3",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed": "#ffdad7",
+                        "on-surface": "#dae2fd",
+                        "surface-dim": "#0b1326",
+                        "on-primary-fixed-variant": "#005236",
+                        "on-surface-variant": "#bbcabf",
+                        "surface-container-lowest": "#060e20",
+                        "error-container": "#93000a",
+                        "surface-container-highest": "#2d3449",
+                        "on-tertiary-fixed": "#410005",
+                        "on-tertiary-container": "#711419",
+                        "surface-bright": "#31394d",
+                        "secondary-fixed": "#d8e2ff",
+                        "primary-container": "#10b981",
+                        "on-tertiary-fixed-variant": "#842225",
+                        "surface-container-low": "#131b2e",
+                        "surface": "#0b1326",
+                        "secondary": "#adc6ff",
+                        "surface-variant": "#2d3449"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "32px",
+                        "md": "16px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "xs": "4px",
+                        "2xl": "48px",
+                        "lg": "24px",
+                        "sm": "8px",
+                        "base": "4px",
+                        "xl": "32px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-sm": ["11px", { "lineHeight": "14px", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: theme('colors.background'); color: theme('colors.on-background'); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background text-on-background flex h-screen overflow-hidden antialiased">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col bg-surface-container-low border-r border-outline-variant fixed left-0 top-0 h-full w-[280px] py-xl transition-all duration-200 ease-in-out z-20">
+<div class="px-md mb-xl flex items-center gap-md">
+<img alt="KVK Logo" class="w-10 h-10 rounded-full object-cover border border-outline-variant" data-alt="A minimalist vector logo for KVK agricultural oversight, featuring abstract leaves or crop rows in deep green and white, set against a dark slate background, communicating authority and technology in agriculture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkhZu7G7K5aEJpncYFdzoPhK34Wc4SuJOP38-TmT8rE4-M630BV_EnbM7C8BVMlMmfnwO3o6bvivN3uHBBn_6CK2OrR17ajjHRQ4GKYUzmA_43-TejR76jBnqxumfHthuAXgOv6Sta7vZTOHCKPDhkv_YVlb0oQBBcuL8U4PGIP8IB00tXIAJKijcmmcWerDVP4IUW-fmKPlYlgIlDecio_S7BCP0QkG0M7XdmndBsnM9Km1DYjtDFYm5c7PRJfVAg2Akgq_8OFnU"/>
+<div>
+<h1 class="text-headline-sm font-headline-sm text-primary">KVK Dashboard</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Agricultural Oversight</p>
+</div>
+</div>
+<div class="px-md mb-lg">
+<button class="w-full bg-primary text-on-primary py-sm px-md rounded font-label-md text-label-md flex items-center justify-center gap-sm hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+                New Report
+            </button>
+</div>
+<div class="flex-1 overflow-y-auto scrollbar-hide px-sm">
+<ul class="space-y-sm">
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-primary bg-surface-container-highest border-l-2 border-primary font-label-md text-label-md transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-weight="fill">dashboard</span>
+                        Dashboard
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-md text-label-md transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-weight="fill">confirmation_number</span>
+                        Triage Tickets
+                    </a>
+</li>
+
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-md text-label-md transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-weight="fill">map</span>
+                        Resource Maps
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-md text-label-md transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-weight="fill">agriculture</span>
+                        Crop Reports
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-md text-label-md transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-weight="fill">group</span>
+                        User Management
+                    </a>
+</li>
+</ul>
+</div>
+<div class="px-sm mt-auto pt-lg border-t border-outline-variant mx-md">
+<ul class="space-y-sm">
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-md text-label-md transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">help</span>
+                        Help Center
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-md text-label-md transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">logout</span>
+                        Sign Out
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col md:ml-[280px] w-full min-h-screen relative">
+<!-- TopNavBar -->
+<header class="bg-surface-container border-b border-outline-variant w-full h-16 flex justify-between items-center px-xl sticky top-0 z-10">
+<div class="flex items-center gap-md">
+<span class="text-headline-md font-headline-md text-primary md:hidden">KVK Admin</span>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-sm text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-sm text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<img alt="Official Profile" class="w-8 h-8 rounded-full ml-sm object-cover border border-outline-variant" data-alt="A professional headshot of an agricultural official wearing a dark field jacket, looking confident, set against a subtle, dark modern office background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJ2E82rzjTI5YirKdyfo9B6QUIkXsVXUuZNUAkCWkJngoTVDCaSgyTlumKlPjyaciryqcURkGfPYQV8fj2orjduJT9pWiPcvCJPN7TLpqPNXvNvnWgjvoRGBgbHyLhSHYz8AksLObHr4Cje1jm9h9-mdz6kuIB3_99Te48SmJYow3Mklm9vBoez37ZKdk1EWOK7Lsna8BHHooJRXxdsfL24dBKTrydcBuo6MIT9dPuRrXUtrk0x-XE-iaTUPxWni99thSsslj_Zrk"/>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 overflow-y-auto p-margin-mobile md:p-margin-desktop">
+<div class="max-w-7xl mx-auto space-y-lg">
+<!-- Metrics Row -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-gutter" id="metrics-container">
+<!-- Metric Cards will be injected here, fallback below -->
+<div class="bg-surface-container border border-outline-variant rounded-xl p-md flex flex-col hover:border-l-2 hover:border-l-primary transition-all">
+<span class="font-label-md text-label-md text-on-surface-variant mb-sm uppercase tracking-wider">Total Active Outbreaks</span>
+<div class="font-display-lg text-display-lg text-on-surface mb-xs">42</div>
+<div class="flex items-center gap-xs text-error font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span>+12% this week</span>
+</div>
+</div>
+<div class="bg-surface-container border border-outline-variant rounded-xl p-md flex flex-col hover:border-l-2 hover:border-l-primary transition-all">
+<span class="font-label-md text-label-md text-on-surface-variant mb-sm uppercase tracking-wider">Pending Lab Reviews</span>
+<div class="font-display-lg text-display-lg text-on-surface mb-xs">156</div>
+<div class="flex items-center gap-xs text-primary font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-sm">trending_down</span>
+<span>-5% this week</span>
+</div>
+</div>
+<div class="bg-surface-container border border-outline-variant rounded-xl p-md flex flex-col hover:border-l-2 hover:border-l-primary transition-all">
+<span class="font-label-md text-label-md text-on-surface-variant mb-sm uppercase tracking-wider">AI Accuracy Rate (%)</span>
+<div class="font-display-lg text-display-lg text-on-surface mb-xs">94.2</div>
+<div class="flex items-center gap-xs text-primary font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+<span>Stable</span>
+</div>
+</div>
+</section>
+<!-- Complex Layout: Main Table + Right Sidebar Feed -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Main Content Panel: Triage Tickets -->
+<section class="lg:col-span-8 bg-surface-container border border-outline-variant rounded-xl overflow-hidden flex flex-col">
+<div class="p-md border-b border-outline-variant flex justify-between items-center bg-surface-container-high">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Triage Tickets</h2>
+<button class="text-primary font-label-sm text-label-sm hover:underline">View All</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse" id="tickets-table">
+<thead class="bg-surface-container-high">
+<tr>
+<th class="font-label-md text-label-md text-on-surface-variant py-sm px-md font-semibold">Ticket ID</th>
+<th class="font-label-md text-label-md text-on-surface-variant py-sm px-md font-semibold">Farmer</th>
+<th class="font-label-md text-label-md text-on-surface-variant py-sm px-md font-semibold">Crop</th>
+<th class="font-label-md text-label-md text-on-surface-variant py-sm px-md font-semibold">AI Prediction</th>
+<th class="font-label-md text-label-md text-on-surface-variant py-sm px-md font-semibold">Confidence</th>
+<th class="font-label-md text-label-md text-on-surface-variant py-sm px-md font-semibold">Status</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm text-on-surface">
+<!-- Fallback Rows -->
+<tr class="border-b border-outline-variant hover:bg-surface-container-high transition-colors">
+<td class="py-sm px-md text-on-surface-variant">#TK-1029</td>
+<td class="py-sm px-md font-medium">Rajesh Kumar</td>
+<td class="py-sm px-md text-on-surface-variant">Wheat</td>
+<td class="py-sm px-md">Leaf Rust</td>
+<td class="py-sm px-md">
+<div class="flex items-center gap-xs">
+<div class="w-full bg-surface-variant rounded-full h-1.5 max-w-[50px]">
+<div class="bg-error h-1.5 rounded-full" style="width: 88%"></div>
+</div>
+<span class="text-label-sm">88%</span>
+</div>
+</td>
+<td class="py-sm px-md">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-label-sm font-medium bg-error/10 text-error border border-error/20">Critical</span>
+</td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-surface-container-high transition-colors">
+<td class="py-sm px-md text-on-surface-variant">#TK-1030</td>
+<td class="py-sm px-md font-medium">Anita Singh</td>
+<td class="py-sm px-md text-on-surface-variant">Rice</td>
+<td class="py-sm px-md">Blast Disease</td>
+<td class="py-sm px-md">
+<div class="flex items-center gap-xs">
+<div class="w-full bg-surface-variant rounded-full h-1.5 max-w-[50px]">
+<div class="bg-primary h-1.5 rounded-full" style="width: 95%"></div>
+</div>
+<span class="text-label-sm">95%</span>
+</div>
+</td>
+<td class="py-sm px-md">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-label-sm font-medium bg-primary/10 text-primary border border-primary/20">Reviewed</span>
+</td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-surface-container-high transition-colors">
+<td class="py-sm px-md text-on-surface-variant">#TK-1031</td>
+<td class="py-sm px-md font-medium">Vikram Patel</td>
+<td class="py-sm px-md text-on-surface-variant">Cotton</td>
+<td class="py-sm px-md">Bollworm</td>
+<td class="py-sm px-md">
+<div class="flex items-center gap-xs">
+<div class="w-full bg-surface-variant rounded-full h-1.5 max-w-[50px]">
+<div class="bg-secondary h-1.5 rounded-full" style="width: 72%"></div>
+</div>
+<span class="text-label-sm">72%</span>
+</div>
+</td>
+<td class="py-sm px-md">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-label-sm font-medium bg-secondary/10 text-secondary border border-secondary/20">Pending</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Right Sidebar: Recent Activity -->
+<aside class="lg:col-span-4 bg-surface-container border border-outline-variant rounded-xl flex flex-col h-[500px]">
+<div class="p-md border-b border-outline-variant bg-surface-container-high">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Recent Activity</h2>
+</div>
+<div class="p-md flex-1 overflow-y-auto relative" id="activity-feed">
+<!-- Vertical Timeline Line -->
+<div class="absolute left-6 top-6 bottom-6 w-px bg-outline-variant hidden md:block"></div>
+<!-- Fallback Activity Items -->
+<div class="space-y-lg relative">
+<div class="flex gap-md">
+<div class="w-2 h-2 rounded-full bg-primary mt-2 ml-[5px] relative z-10 flex-shrink-0"></div>
+<div>
+<p class="font-body-sm text-body-sm text-on-surface">Dr. Sharma approved intervention for <span class="font-medium">#TK-1029</span>.</p>
+<span class="font-label-sm text-label-sm text-on-surface-variant">10 mins ago</span>
+</div>
+</div>
+<div class="flex gap-md">
+<div class="w-2 h-2 rounded-full bg-secondary mt-2 ml-[5px] relative z-10 flex-shrink-0"></div>
+<div>
+<p class="font-body-sm text-body-sm text-on-surface">AI model flagged <span class="font-medium">Cotton fields in Sector 4</span>.</p>
+<span class="font-label-sm text-label-sm text-on-surface-variant">45 mins ago</span>
+</div>
+</div>
+<div class="flex gap-md">
+<div class="w-2 h-2 rounded-full bg-error mt-2 ml-[5px] relative z-10 flex-shrink-0"></div>
+<div>
+<p class="font-body-sm text-body-sm text-on-surface">System alert: Weather anomaly detected in Northern District.</p>
+<span class="font-label-sm text-label-sm text-on-surface-variant">2 hours ago</span>
+</div>
+</div>
+<div class="flex gap-md">
+<div class="w-2 h-2 rounded-full bg-outline mt-2 ml-[5px] relative z-10 flex-shrink-0"></div>
+<div>
+<p class="font-body-sm text-body-sm text-on-surface">Lab results uploaded for <span class="font-medium">#TK-1015</span>.</p>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Yesterday</span>
+</div>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div>
+</main>
+</div>
+    <script>
+        // Data Fetching and Updating Logic (Mocked integration)
+        document.addEventListener('DOMContentLoaded', () => {
+            // Fetch Metrics
+            fetch('http://127.0.0.1:8002/api/v1/admin/analytics/summary-stats')
+                .then(response => response.ok ? response.json() : Promise.reject('Failed to load'))
+                .then(data => {
+                    // Update metrics container if real data exists
+                    console.log('Metrics loaded:', data);
+                })
+                .catch(error => console.log('Using fallback metrics data.'));
+
+            const fetchTickets = () => {
+                fetch('http://127.0.0.1:8002/api/v1/admin/triage/tickets')
+                    .then(response => response.ok ? response.json() : Promise.reject('Failed to load'))
+                    .then(data => {
+                        console.log('Tickets loaded:', data);
+                        const tbody = document.querySelector('#tickets-table tbody');
+                        if (data && data.length > 0) {
+                            tbody.innerHTML = '';
+                            data.forEach(ticket => {
+                                const row = document.createElement('tr');
+                                row.className = 'border-b border-outline-variant hover:bg-surface-container-high transition-colors';
+                                
+                                // Determine status badge classes
+                                let statusClasses = 'bg-secondary/10 text-secondary border border-secondary/20';
+                                if (ticket.status === 'PENDING' || ticket.status === 'PENDING_REVIEW') statusClasses = 'bg-secondary/10 text-secondary border border-secondary/20';
+                                else if (ticket.status === 'CRITICAL' || ticket.status === 'URGENT') statusClasses = 'bg-error/10 text-error border border-error/20';
+                                else if (ticket.status === 'REVIEWED' || ticket.status === 'EXPERT_DIAGNOSED') statusClasses = 'bg-primary/10 text-primary border border-primary/20';
+                                else if (ticket.status === 'CLOSED') statusClasses = 'bg-outline/10 text-outline border border-outline/20';
+
+                                // Determine confidence bar color
+                                let barColor = 'bg-secondary';
+                                if (ticket.ai_confidence > 0.9) barColor = 'bg-primary';
+                                else if (ticket.ai_confidence < 0.7) barColor = 'bg-error';
+
+                                const confidencePercent = Math.round(ticket.ai_confidence * 100);
+
+                                row.innerHTML = `
+                                    <td class="py-sm px-md text-on-surface-variant font-medium cursor-pointer" onclick="openTicket('${ticket.id}')">#TK-${ticket.id}</td>
+                                    <td class="py-sm px-md font-medium">${ticket.farmer_name || 'Unknown'}</td>
+                                    <td class="py-sm px-md text-on-surface-variant">${ticket.crop_name}</td>
+                                    <td class="py-sm px-md">${ticket.ai_prediction}</td>
+                                    <td class="py-sm px-md">
+                                        <div class="flex items-center gap-xs">
+                                            <div class="w-full bg-surface-variant rounded-full h-1.5 max-w-[50px]">
+                                                <div class="${barColor} h-1.5 rounded-full" style="width: ${confidencePercent}%"></div>
+                                            </div>
+                                            <span class="text-label-sm">${confidencePercent}%</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-sm px-md">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-label-sm font-medium ${statusClasses}">${ticket.status}</span>
+                                    </td>
+                                `;
+                                tbody.appendChild(row);
+                            });
+                        }
+                    })
+                    .catch(error => console.log('Using fallback ticket data.'));
+            };
+            
+            // Initial fetch
+            fetchTickets();
+            // Poll every 5 seconds
+            setInterval(fetchTickets, 5000);
+
+            // Fetch Activity
+            fetch('http://127.0.0.1:8002/api/v1/admin/analytics/recent-activity')
+                .then(response => response.ok ? response.json() : Promise.reject('Failed to load'))
+                .then(data => {
+                    // Update activity feed if real data exists
+                    console.log('Activity loaded:', data);
+                })
+                .catch(error => console.log('Using fallback activity data.'));
+        });
+    </script>
+</body></html>

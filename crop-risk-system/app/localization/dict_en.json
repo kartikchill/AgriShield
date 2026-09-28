@@ -1,0 +1,12 @@
+{
+  "risk_status_safe": "Safe",
+  "risk_status_monitor": "Monitor",
+  "risk_status_critical": "Critical Risk (Immediate Action Required)",
+  "crop_cotton": "Cotton",
+  "crop_tomato": "Tomato",
+  "pest_pink_bollworm": "Pink Bollworm",
+  "pest_late_blight": "Late Blight",
+  "ipm_heading": "Integrated Pest Management",
+  "ppe_warning": "Wearing safety kit (gloves, mask) is mandatory.",
+  "phi_warning": "Do not harvest crop for {days} days after spraying."
+}

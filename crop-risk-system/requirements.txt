@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+httpx
+xgboost
+joblib
+numpy
+pandas
+scikit-learn
+torch
+torchvision
+Pillow
+python-multipart
+

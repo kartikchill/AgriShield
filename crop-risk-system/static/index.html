@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Crop Risk &amp; Pest Surveillance</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Leaflet CSS & JS -->
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+<script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#141e33',
+                            900: '#0f172a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-sans flex bg-amber-50/50 min-h-screen flex-col text-slate-800">
+<div class="space-y-8 max-w-6xl mx-auto">
+<!-- Header -->
+<div class="flex shadow-md justify-between md:flex-row p-6 md:items-center shadow-xl bg-white border items-start flex-col rounded-xl border-emerald-100">
+<div>
+<h1 class="text-emerald-700 mb-2 text-3xl font-bold" data-i18n="Crop Health &amp; Pest Surveillance System">Crop Health &amp; Pest Surveillance System</h1>
+<p class="text-slate-500" data-i18n="Unified Dashboard: Disease Risk Forecasting &amp; Pest ETL Rule Engine">Unified Dashboard: Disease Risk Forecasting &amp; Pest ETL Rule Engine</p>
+</div>
+<div class="flex space-x-3 md:mt-0 items-center mt-4">
+<label class="text-slate-500 text-sm font-medium" data-i18n="Language:">Language:</label>
+<select class="border-emerald-200 text-sm rounded-lg bg-white border focus:ring-emerald-500 p-2 text-slate-800" id="langSelector">
+<option value="en">English</option>
+<option value="mr">Marathi</option>
+<option value="hi">Hindi</option>
+</select>
+</div>
+</div>
+<!-- Tabs -->
+<div class="border-emerald-200 flex px-6 border-b bg-white mb-8 shadow-sm overflow-x-auto">
+<button class="font-semibold px-6 border-b-2 text-emerald-700 py-3 transition-colors border-emerald-400 focus:outline-none" data-i18n="Disease Risk (Model A)" id="tabModelA">Disease Risk (Model A)</button>
+<button class="font-semibold hover:text-emerald-400 px-6 border-transparent border-b-2 py-3 transition-colors text-slate-500 focus:outline-none" data-i18n="Pest Surveillance (ETL)" id="tabPest">Pest Surveillance (ETL)</button>
+<button class="font-semibold hover:text-cyan-400 px-6 border-transparent border-b-2 py-3 transition-colors text-slate-500 focus:outline-none" id="tabVision">Vision AI (Model B)</button>
+<button class="font-semibold hover:text-purple-400 px-6 border-transparent border-b-2 py-3 transition-colors text-slate-500 focus:outline-none" data-i18n="Expert Referral (Lab Routing)" id="tabReferral">Expert Referral (Lab Routing)</button>
+<button class="font-semibold px-6 border-transparent border-b-2 py-3 transition-colors text-slate-500 hover:text-orange-400 focus:outline-none" data-i18n="Geospatial Hotspots" id="tabHotspots">Geospatial Hotspots</button>
+<button class="font-semibold px-6 hover:text-pink-400 border-transparent border-b-2 py-3 transition-colors text-slate-500 focus:outline-none" id="tabLearning">Active Learning Loop</button>
+<button class="py-4 hover:text-emerald-700 whitespace-nowrap transition-all px-6 focus:outline-none border-transparent border-b-4 text-slate-500 font-bold" id="tabHistory">My Tickets &amp; Feedback</button></div>
+<!-- ==================== MODEL A SECTION ==================== -->
+
+<section class="animate-fade-in px-6 w-full max-w-7xl mx-auto hidden" id="sectionHistory">
+<div class="rounded-2xl shadow-xl bg-white border mb-8 border-emerald-100 overflow-hidden">
+<div class="flex bg-emerald-50 items-center border-b justify-between p-6 border-emerald-100">
+<div>
+<h2 class="text-emerald-900 text-2xl font-bold">My Consultation History</h2>
+<p class="text-emerald-700 mt-1 text-sm">Track your laboratory referrals and official KVK expert prescriptions.</p>
+</div>
+<button class="font-semibold flex px-4 items-center gap-2 text-white rounded-lg py-2 hover:bg-emerald-700 bg-emerald-600 transition-colors shadow-sm" onclick="fetchHistory()">
+<span class="material-symbols-outlined text-sm">refresh</span> Refresh
+                    </button>
+</div>
+<div class="p-6">
+<div class="text-center text-emerald-600 py-12 hidden" id="historyLoading">
+<span class="material-symbols-outlined animate-spin text-4xl">sync</span>
+<p class="mt-4 font-medium">Fetching records...</p>
+</div>
+                    <div class="flex flex-col md:flex-row gap-3 mb-6 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
+                        <input type="text" id="farmerSearch" placeholder="Search Ticket ID or Crop..." class="flex-1 bg-white border border-emerald-200 text-sm rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 outline-none text-slate-700" onkeyup="renderHistoryTickets()">
+                        <select id="farmerStatus" class="bg-white border border-emerald-200 text-sm rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 outline-none text-slate-700 cursor-pointer" onchange="renderHistoryTickets()">
+                            <option value="ALL">All Statuses</option>
+                            <option value="PENDING_REVIEW">Pending Review</option>
+                            <option value="EXPERT_DIAGNOSED">Diagnosed by Expert</option>
+                        </select>
+                        <select id="farmerSort" class="bg-white border border-emerald-200 text-sm rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 outline-none text-slate-700 cursor-pointer" onchange="renderHistoryTickets()">
+                            <option value="DESC">Latest First</option>
+                            <option value="ASC">Oldest First</option>
+                        </select>
+                    </div>
+                    <div class="space-y-6" id="historyList">
+<!-- Dynamic content injected here -->
+</div>
+</div>
+</div>
+</section>
+<div class="md:grid-cols-3 grid-cols-1 gap-8 grid" id="sectionModelA">
+<!-- Left Column: Input Form -->
+<div class="shadow-md col-span-1 h-fit p-6 shadow-xl bg-white border rounded-xl border-emerald-100">
+<h2 class="font-semibold text-slate-800 text-xl mb-4" data-i18n="Field Parameters">Field Parameters</h2>
+<form class="space-y-4" id="riskForm">
+<div>
+<label class="text-slate-300 block text-sm font-medium mb-1" data-i18n="Crop Type">Crop Type</label>
+<select class="border-emerald-200 p-2.5 text-sm rounded-lg w-full bg-white border focus:ring-emerald-500 text-slate-800" id="crop_type">
+<option value="Tomato">Tomato</option>
+<option value="Potato">Potato</option>
+</select>
+</div>
+<div>
+<label class="text-slate-300 block text-sm font-medium mb-1" data-i18n="Crop Variety">Crop Variety</label>
+<input class="border-emerald-200 p-2.5 text-sm rounded-lg w-full bg-white border focus:ring-emerald-500 text-slate-800" id="crop_variety" type="text" value="Roma"/>
+</div>
+<div>
+<label class="text-slate-300 block text-sm font-medium mb-1" data-i18n="Growth Stage">Growth Stage</label>
+<select class="border-emerald-200 p-2.5 text-sm rounded-lg w-full bg-white border focus:ring-emerald-500 text-slate-800" id="growth_stage">
+<option value="Vegetative">Vegetative</option>
+<option selected="" value="Flowering">Flowering</option>
+<option value="Fruiting">Fruiting</option>
+<option value="Maturity">Maturity</option>
+</select>
+</div>
+<div>
+<label class="text-slate-300 block text-sm font-medium mb-1" data-i18n="Soil Type">Soil Type</label>
+<select class="border-emerald-200 p-2.5 text-sm rounded-lg w-full bg-white border focus:ring-emerald-500 text-slate-800" id="soil_type">
+<option value="Loamy">Loamy</option>
+<option value="Clay">Clay</option>
+<option value="Sandy">Sandy</option>
+</select>
+</div>
+<div class="border-emerald-100 border-t pt-4">
+<div class="flex mb-2 justify-between items-center">
+<label class="text-slate-300 block text-sm font-medium" data-i18n="Location">Location</label>
+<button class="text-xs border-emerald-600/50 hover:bg-emerald-600/40 text-emerald-700 bg-emerald-600/20 rounded transition border px-2 py-1" data-i18n="Detect Location" id="geoBtn" type="button">
+                                Detect Location
+                            </button>
+</div>
+<div class="grid-cols-2 gap-2 grid">
+<input class="border-emerald-200 p-2.5 text-sm rounded-lg w-full bg-white border focus:ring-emerald-500 text-slate-800" id="latitude" placeholder="Lat (e.g. 28.61)" step="any" type="number"/>
+<input class="border-emerald-200 p-2.5 text-sm rounded-lg w-full bg-white border focus:ring-emerald-500 text-slate-800" id="longitude" placeholder="Lon (e.g. 77.20)" step="any" type="number"/>
+</div>
+</div>
+<button class="flex font-medium px-4 justify-center items-center text-white rounded-lg w-full bg-emerald-600 py-3 mt-6 hover:bg-emerald-500 transition-colors" id="submitBtn" type="submit">
+<span data-i18n="Analyze Disease Risk" id="btnText">Analyze Disease Risk</span>
+</button>
+</form>
+</div>
+<!-- Right Column: Results Dashboard -->
+<div class="col-span-1 md:col-span-2 space-y-6 hidden" id="resultsView">
+<!-- Main Risk Card -->
+<div class="flex shadow-md items-center justify-between p-6 shadow-xl bg-white border rounded-xl border-emerald-100">
+<div>
+<p class="text-slate-500 font-medium" data-i18n="Current Disease Risk">Current Disease Risk</p>
+<h3 class="text-slate-800 mt-1 text-3xl font-bold" id="resDisease">Late Blight</h3>
+</div>
+<div class="text-right">
+<div class="rounded-full px-4 inline-block py-2 border text-lg font-bold" id="resBadge">--</div>
+<p class="text-slate-500 mt-2 text-sm" id="resScore">-- %</p>
+</div>
+</div>
+<!-- Summary & Recs -->
+<div class="shadow-md p-6 shadow-xl bg-white border rounded-xl border-emerald-100 space-y-4">
+<div>
+<h4 class="text-emerald-700 font-semibold mb-1" data-i18n="Executive Summary">Executive Summary</h4>
+<p class="text-slate-300 text-sm" id="resSummary">...</p>
+</div>
+<div class="rounded-lg bg-white border border-emerald-100 p-4">
+<h4 class="font-semibold text-blue-700 mb-1" data-i18n="Actionable Advisory">Actionable Advisory</h4>
+<p class="text-slate-300 text-sm" id="resRec">...</p>
+<div id="modelAIpm"></div>
+</div>
+</div>
+<!-- 4-Day Forecast Grid -->
+<div>
+<h3 class="font-semibold text-slate-800 text-lg mb-3" data-i18n="4-Day Trajectory (Weather features)">4-Day Trajectory (Weather features)</h3>
+<div class="md:grid-cols-4 grid-cols-2 gap-4 grid" id="forecastGrid"></div>
+</div>
+<!-- Contributing Factors -->
+<div class="shadow-md p-6 shadow-xl bg-white border rounded-xl border-emerald-100">
+<h3 class="font-semibold text-slate-800 text-lg mb-4" data-i18n="Model Factors (XGBoost Inputs)">Model Factors (XGBoost Inputs)</h3>
+<ul class="space-y-2" id="factorsList"></ul>
+</div>
+</div>
+</div>
+<!-- ==================== PEST SURVEILLANCE SECTION ==================== -->
+<div class="grid-cols-1 hidden md:grid-cols-3 gap-8 grid" id="sectionPest">
+<!-- Left Column: Input Form -->
+<div class="shadow-md col-span-1 h-fit p-6 shadow-xl bg-white border rounded-xl border-emerald-100">
+<h2 class="font-semibold text-slate-800 text-xl mb-4" data-i18n="Log Sensor/Trap Data">Log Sensor/Trap Data</h2>
+<form class="space-y-4" id="pestForm">
+<div>
+<label class="text-slate-300 block text-sm font-medium mb-1" data-i18n="Field ID">Field ID</label>
+<input class="border-emerald-200 p-2.5 text-sm rounded-lg w-full focus:ring-blue-500 bg-white border text-slate-800" id="pest_field_id" type="text" value="FIELD_001"/>
+</div>
+<div>
+<label class="text-slate-300 block text-sm font-medium mb-1" data-i18n="Crop">Crop</label>
+<select class="border-emerald-200 p-2.5 text-sm rounded-lg w-full bg-white border text-slate-800" id="pest_crop_name">
+<option value="Cotton">Cotton</option>
+<option value="Rice">Rice</option>
+<option value="Maize">Maize</option>
+<option value="Wheat">Wheat</option>
+</select>
+</div>
+<div>
+<label class="text-slate-300 block text-sm font-medium mb-1" data-i18n="Pest">Pest</label>
+<select class="border-emerald-200 p-2.5 text-sm rounded-lg w-full bg-white border text-slate-800" id="pest_name">
+<option value="Pink Bollworm">Pink Bollworm</option>
+<option value="Stem Borer">Stem Borer</option>
+<option value="Brown Planthopper">Brown Planthopper</option>
+<option value="Fall Armyworm">Fall Armyworm</option>
+<option value="Aphids">Aphids</option>
+</select>
+</div>
+<div>
+<label class="text-slate-300 block text-sm font-medium mb-1" data-i18n="Metric Type (Auto-mapped)">Metric Type (Auto-mapped)</label>
+<select class="border-emerald-200 p-2.5 text-sm rounded-lg w-full bg-white border text-slate-800" id="pest_metric">
+<option value="larvae_per_100_plants">larvae_per_100_plants</option>
+<option value="percent_dead_hearts">percent_dead_hearts</option>
+<option value="insects_per_hill">insects_per_hill</option>
+<option value="trap_count_per_week">trap_count_per_week</option>
+<option value="aphids_per_tiller">aphids_per_tiller</option>
+</select>
+</div>
+<div>
+<label class="text-slate-300 block text-sm font-medium mb-1" data-i18n="Observed Value">Observed Value</label>
+<input class="border-emerald-200 p-2.5 text-sm rounded-lg w-full focus:ring-blue-500 bg-white border text-slate-800" id="pest_obs_val" placeholder="e.g. 75" required="" step="any" type="number"/>
+</div>
+<button class="font-medium px-4 text-white hover:bg-blue-500 rounded-lg w-full py-3 mt-6 transition-colors bg-blue-600" data-i18n="Evaluate ETL Risk" id="pestSubmitBtn" type="submit">
+                        Evaluate ETL Risk
+                    </button>
+</form>
+<div class="border-emerald-100 border-t mt-8 pt-6">
+<button class="font-medium px-4 rounded-lg hover:bg-slate-600 w-full py-2 transition-colors text-slate-800 bg-slate-700" data-i18n="View Field History" id="viewHistoryBtn">
+                        View Field History
+                    </button>
+</div>
+</div>
+<!-- Right Column: Results Dashboard -->
+<div class="col-span-1 md:col-span-2 space-y-6">
+<!-- Evaluation Result -->
+<div class="hidden shadow-md p-6 shadow-xl bg-white border rounded-xl border-emerald-100" id="pestResultsView">
+<h3 class="text-slate-800 mb-2 text-xl font-bold" data-i18n="ICAR ETL Evaluation Result">ICAR ETL Evaluation Result</h3>
+<div class="flex items-center space-x-4 mt-4 mb-4">
+<div class="rounded-full text-sm px-4 py-2 border font-bold" id="pestBadge">SAFE</div>
+<p class="text-slate-300">Observed Value: <span class="text-slate-800 text-lg font-bold" id="pestObserved"></span></p>
+</div>
+<div class="rounded-lg bg-white border border-emerald-100 p-4">
+<h4 class="font-semibold text-blue-700 mb-2">Integrated Pest Management (IPM) Advisory</h4>
+<p class="text-slate-300 leading-relaxed text-sm" id="pestAdvisory">...</p>
+<div id="pestIpm"></div>
+</div>
+</div>
+<!-- History View -->
+<div class="hidden shadow-md p-6 shadow-xl bg-white border rounded-xl border-emerald-100" id="pestHistoryView">
+<h3 class="flex items-center justify-between text-xl mb-4 text-slate-800 font-bold">
+                        Field History
+                        <span class="font-normal text-slate-500 text-sm" id="historyFieldId"></span>
+</h3>
+<div class="overflow-x-auto">
+<table class="text-slate-300 text-left text-sm w-full">
+<thead class="text-slate-500 text-xs uppercase bg-white">
+<tr>
+<th class="py-3 px-4">Time</th>
+<th class="py-3 px-4" data-i18n="Pest">Pest</th>
+<th class="py-3 px-4">Value</th>
+<th class="py-3 px-4">Status</th>
+</tr>
+</thead>
+<tbody class="divide-slate-700 divide-y" id="pestHistoryTable">
+<!-- injected -->
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<!-- ==================== VISION AI SECTION (MODEL B) ==================== -->
+<div class="hidden" id="sectionVision">
+<div class="md:grid-cols-2 grid-cols-1 gap-8 grid">
+<!-- Upload Card -->
+<div class="shadow-md h-fit p-6 shadow-xl bg-white border rounded-xl border-emerald-100">
+<div class="mb-4 flex space-x-3 items-center">
+<div class="flex bg-cyan-500/20 w-10 items-center justify-center rounded-lg text-cyan-700 text-xl h-10">📷</div>
+<div>
+<h2 class="font-semibold text-slate-800 text-xl">Vision AI (Model B)</h2>
+<p class="text-slate-500 text-sm">EfficientNetV2-S • 23 Classes • ~99.7% Accuracy</p>
+</div>
+</div>
+<div class="border-emerald-200 border-2 cursor-pointer hover:border-cyan-500 rounded-xl transition-colors border-dashed text-center p-8" id="dropZone">
+<div id="dropPlaceholder">
+<div class="mb-3 text-4xl">🌿</div>
+<p class="text-slate-300 font-medium">Drag &amp; drop a leaf image here</p>
+<p class="text-slate-500 mt-1 text-sm">or click to browse • JPEG / PNG • Max 10 MB</p>
+</div>
+<img alt="Preview" class="object-cover rounded-lg mx-auto hidden max-h-64" id="previewImage"/>
+<input accept="image/jpeg,image/png,image/webp" class="hidden" id="imageInput" type="file"/>
+</div>
+<button class="flex disabled:text-slate-500 font-medium bg-cyan-600 px-4 justify-center items-center rounded-lg w-full hover:bg-cyan-500 disabled:bg-slate-700 py-3 mt-4 transition-colors text-slate-800" disabled="" id="analyzeImageBtn">
+<span id="visionBtnText">Select an image first</span>
+</button>
+</div>
+<!-- Results Card -->
+<div class="hidden space-y-4" id="visionResultsView">
+<div class="shadow-md p-6 shadow-xl bg-white border rounded-xl border-emerald-100">
+<div class="mb-4 flex items-start justify-between">
+<div>
+<p class="text-slate-500 text-sm font-medium">Detected Condition</p>
+<h3 class="text-slate-800 mt-1 text-2xl font-bold" id="visionDisease">--</h3>
+</div>
+<div class="text-right">
+<div class="rounded-full px-4 inline-block py-2 border text-lg font-bold" id="visionBadge">--</div>
+<p class="text-slate-500 mt-2 text-sm" id="visionConf">Confidence: --</p>
+</div>
+</div>
+<div class="border-yellow-500/50 rounded-lg bg-yellow-900/30 border mt-4 hidden p-4" id="expertAlert">
+<p class="font-semibold text-sm text-yellow-300">⚠ Low Confidence - Expert Review Recommended</p>
+<p class="text-xs mt-1 text-yellow-200">The AI is not confident enough. Consider submitting a lab referral ticket.</p>
+<button class="text-xs bg-purple-600 rounded-lg py-1.5 hover:bg-purple-500 px-3 transition-colors text-slate-800 mt-3" id="goToReferralBtn">Open Referral Form →</button>
+</div>
+</div>
+<div class="shadow-md p-6 shadow-xl bg-white border rounded-xl border-emerald-100">
+<h4 class="font-semibold text-slate-800 mb-3">Top-3 Predictions</h4>
+<div class="space-y-3" id="top3Container"></div>
+</div>
+<div class="border-cyan-700/40 shadow-md p-6 shadow-xl bg-white border rounded-xl hidden border-emerald-100" id="visionIpmCard">
+<h4 class="font-semibold text-cyan-700 mb-2">📊 Linked IPM Advisory</h4>
+<p class="text-slate-300 text-sm" id="visionIpmText"></p>
+</div>
+</div>
+</div>
+</div>
+<!-- ==================== EXPERT REFERRAL SECTION ==================== -->
+<div class="grid-cols-1 hidden md:grid-cols-3 gap-8 grid" id="sectionReferral">
+<!-- Left Column: Input Form -->
+<div class="shadow-md col-span-1 h-fit p-6 shadow-xl bg-white border rounded-xl border-emerald-100">
+<h2 class="font-semibold text-slate-800 text-xl mb-4" data-i18n="Escalate to Lab / Expert">Escalate to Lab / Expert</h2>
+<form class="space-y-4" id="referralForm">
+<div>
+<label class="text-slate-300 block text-sm font-medium mb-1" data-i18n="Farmer Name">Farmer Name</label>
+<input class="border-emerald-200 p-2.5 text-sm focus:ring-purple-500 rounded-lg w-full bg-white border text-slate-800" id="ref_farmer" required="" type="text"/>
+</div>
+<div>
+<label class="text-slate-300 block text-sm font-medium mb-1" data-i18n="Phone Number">Phone Number</label>
+<input class="border-emerald-200 p-2.5 text-sm focus:ring-purple-500 rounded-lg w-full bg-white border text-slate-800" id="ref_phone" required="" type="text"/>
+</div>
+<div>
+<label class="text-slate-300 block text-sm font-medium mb-1" data-i18n="Crop">Crop</label>
+<input class="border-emerald-200 p-2.5 text-sm focus:ring-purple-500 rounded-lg w-full bg-white border text-slate-800" id="ref_crop" required="" type="text" value="Tomato"/>
+</div>
+<div>
+<label class="text-slate-300 block text-sm font-medium mb-1" data-i18n="Symptoms">Symptoms</label>
+<textarea class="border-emerald-200 p-2.5 text-sm focus:ring-purple-500 rounded-lg w-full bg-white border text-slate-800" id="ref_symptoms" rows="2"></textarea>
+</div>
+<div class="border-emerald-100 border-t pt-4">
+<div class="flex mb-2 justify-between items-center">
+<label class="text-slate-300 block text-sm font-medium" data-i18n="Farmer Location">Farmer Location</label>
+<button class="hover:bg-purple-600/40 text-xs text-purple-700 bg-purple-600/20 rounded transition border px-2 py-1 border-purple-600/50" data-i18n="Detect Location" id="refGeoBtn" type="button">
+                                Detect Location
+                            </button>
+</div>
+<div class="grid-cols-2 gap-2 grid">
+<input class="border-emerald-200 p-2.5 text-sm focus:ring-purple-500 rounded-lg w-full bg-white border text-slate-800" id="ref_lat" placeholder="Lat (e.g. 19.12)" required="" step="any" type="number"/>
+<input class="border-emerald-200 p-2.5 text-sm focus:ring-purple-500 rounded-lg w-full bg-white border text-slate-800" id="ref_lon" placeholder="Lon (e.g. 73.97)" required="" step="any" type="number"/>
+</div>
+</div>
+<button class="font-medium px-4 bg-purple-600 rounded-lg w-full hover:bg-purple-500 py-3 mt-6 transition-colors text-slate-800" data-i18n="Submit Referral Ticket" id="refSubmitBtn" type="submit">
+                        Submit Referral Ticket
+                    </button>
+</form>
+</div>
+<!-- Right Column: Results -->
+<div class="col-span-1 md:col-span-2 space-y-6">
+<div class="hidden shadow-md p-6 shadow-xl bg-white border rounded-xl border-emerald-100" id="refResultsView">
+<div class="flex mb-6 justify-between items-center">
+<h3 class="text-slate-800 text-2xl font-bold" data-i18n="Ticket Created Successfully">Ticket Created Successfully</h3>
+<div class="rounded-full border-purple-500/50 text-sm px-4 text-purple-700 py-2 bg-purple-500/20 border font-bold">PENDING REVIEW</div>
+</div>
+<div class="mb-6 grid-cols-2 gap-6 grid">
+<div class="rounded-lg bg-white border border-emerald-100 p-4">
+<h4 class="font-semibold text-purple-700 mb-2" data-i18n="Ticket ID">Ticket ID</h4>
+<p class="text-slate-800 text-xl font-mono" id="refTicketId"></p>
+</div>
+<div class="rounded-lg bg-white border border-emerald-100 p-4">
+<h4 class="font-semibold text-purple-700 mb-2" data-i18n="Routing Info">Routing Info</h4>
+<p class="text-slate-300">Nearest Lab: <span class="text-slate-800 font-bold" id="refLab"></span></p>
+<p class="text-slate-300">Distance: <span class="text-slate-800 font-bold" id="refDist"></span> km</p>
+<p class="text-slate-300 mt-2">Contact: <span class="text-slate-800" id="refContact"></span></p>
+</div>
+</div>
+<div class="rounded-lg bg-white border border-emerald-100 p-4">
+<h4 class="font-semibold text-purple-700 mb-2" data-i18n="Physical Sample Packaging Guidelines">Physical Sample Packaging Guidelines</h4>
+<p class="text-slate-300 leading-relaxed text-sm" id="refGuidelines"></p>
+</div>
+</div>
+</div>
+</div>
+<!-- ==================== GEOSPATIAL HOTSPOTS SECTION ==================== -->
+<div class="flex space-y-6 flex-col hidden" id="sectionHotspots">
+<!-- Map Container -->
+<div class="shadow-md shadow-xl w-full bg-white border rounded-xl border-emerald-100 p-4">
+<div class="mb-4 flex justify-between items-center">
+<h2 class="font-semibold text-slate-800 text-xl" data-i18n="Live Epidemiological Map (Maharashtra)">Live Epidemiological Map (Maharashtra)</h2>
+<div class="flex text-sm space-x-2">
+<span class="flex items-center"><span class="rounded-full w-3 mr-1 bg-red-500 h-3"></span> Critical</span>
+<span class="flex items-center"><span class="rounded-full w-3 mr-1 bg-orange-500 h-3"></span> High</span>
+<span class="flex items-center"><span class="rounded-full w-3 mr-1 bg-green-500 h-3"></span> Low/Med</span>
+</div>
+</div>
+<div class="border-emerald-200 h-[500px] rounded-lg w-full z-0 border" id="hotspotMap"></div>
+</div>
+<!-- District Dashboard -->
+<div class="shadow-md p-6 shadow-xl w-full bg-white border rounded-xl border-emerald-100">
+<h3 class="mb-4 text-slate-800 text-lg font-bold" data-i18n="District Surveillance Summary">District Surveillance Summary</h3>
+<div class="overflow-x-auto">
+<table class="text-slate-300 text-left text-sm w-full">
+<thead class="text-slate-500 text-xs uppercase bg-white">
+<tr>
+<th class="py-3 px-4" data-i18n="District">District</th>
+<th class="py-3 px-4" data-i18n="Active Outbreaks">Active Outbreaks</th>
+<th class="py-3 px-4" data-i18n="Dominant Threat">Dominant Threat</th>
+<th class="py-3 px-4" data-i18n="Alert Status">Alert Status</th>
+</tr>
+</thead>
+<tbody class="divide-slate-700 divide-y" id="districtSummaryTable">
+<!-- Injected via JS -->
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<!-- ==================== ACTIVE LEARNING SECTION ==================== -->
+<div class="hidden space-y-6" id="sectionLearning">
+<div class="shadow-md p-6 shadow-xl bg-white border rounded-xl border-emerald-100">
+<div class="flex mb-6 justify-between items-center">
+<div>
+<h2 class="text-slate-800 text-2xl font-bold">Active Learning &amp; Feedback Loop</h2>
+<p class="text-slate-500 mt-1 text-sm">Continuous model retraining via farmer follow-ups and expert validation</p>
+</div>
+<div class="flex items-center bg-pink-500/20 w-12 justify-center rounded-lg h-12 text-rose-700 text-2xl">↻</div>
+</div>
+<div class="md:grid-cols-2 grid-cols-1 gap-6 grid">
+<!-- Export Card -->
+<div class="p-5 rounded-lg bg-white border border-emerald-100">
+<h3 class="font-semibold text-slate-800 text-lg mb-2">ML Dataset Export</h3>
+<p class="text-slate-500 mb-4 text-sm">Export human-verified golden datasets for Model A and Model B retraining pipelines.</p>
+<div class="space-y-3">
+<button class="flex font-medium px-4 items-center justify-between hover:bg-slate-600 w-full py-2 rounded transition-colors text-slate-800 bg-slate-700" id="btnExportWeather">
+<span>Export Weather Risk CSV</span>
+<span>⬇</span>
+</button>
+<button class="flex font-medium px-4 items-center justify-between hover:bg-slate-600 w-full py-2 rounded transition-colors text-slate-800 bg-slate-700" id="btnExportVision">
+<span>Export Vision AI (YOLO format)</span>
+<span>⬇</span>
+</button>
+</div>
+<div class="hidden text-rose-700 mt-3 text-sm" id="exportStatus"></div>
+</div>
+<!-- Pending Follow Ups -->
+<div class="p-5 rounded-lg bg-white border border-emerald-100">
+<div class="mb-4 flex justify-between items-center">
+<h3 class="font-semibold text-slate-800 text-lg">Pending Field Check-ins</h3>
+<span class="text-xs rounded bg-red-500/20 px-2 py-1 text-red-400 font-bold">Action Needed</span>
+</div>
+<div class="space-y-3">
+<div class="flex shadow-md items-center justify-between rounded bg-white border border-emerald-100 p-3">
+<div>
+<p class="text-slate-800 text-sm font-medium">Ticket: TICKET-001</p>
+<p class="text-slate-500 text-xs">8 days since advisory</p>
+</div>
+<button class="text-xs hover:bg-pink-500 py-1.5 rounded px-3 bg-pink-600 transition-colors text-slate-800" onclick="alert('Feedback logged into RetrainingArchive successfully!')">Submit Feedback</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+        // --- TAB LOGIC ---
+        const tabModelA = document.getElementById('tabModelA');
+        const tabPest = document.getElementById('tabPest');
+        const sectionModelA = document.getElementById('sectionModelA');
+        const sectionPest = document.getElementById('sectionPest');
+        const tabVision = document.getElementById('tabVision');
+        const sectionVision = document.getElementById('sectionVision');
+
+        tabModelA.addEventListener('click', () => {
+            tabModelA.classList.add('text-emerald-400', 'border-emerald-400');
+            tabModelA.classList.remove('text-slate-400', 'border-transparent');
+            tabPest.classList.remove('text-blue-400', 'border-blue-400');
+            tabPest.classList.add('text-slate-400', 'border-transparent');
+            sectionModelA.classList.remove('hidden');
+            sectionPest.classList.add('hidden');
+        });
+
+        tabPest.addEventListener('click', () => {
+            tabPest.classList.add('text-blue-400', 'border-blue-400');
+            tabPest.classList.remove('text-slate-400', 'border-transparent');
+            tabModelA.classList.remove('text-emerald-400', 'border-emerald-400');
+            tabModelA.classList.add('text-slate-400', 'border-transparent');
+            sectionPest.classList.remove('hidden');
+            sectionModelA.classList.add('hidden');
+        });
+
+        // --- IPM RENDER FUNCTION ---
+        function renderIPM(ipm) {
+            if (!ipm) return '';
+            let html = '<div class="mt-4 space-y-3">';
+            if (ipm.cultural_advisory) {
+                html += `<div class="p-3 bg-slate-800 rounded border border-slate-600"><span class="text-green-400 font-semibold block mb-1" data-i18n="Cultural Control">Cultural Control</span><span class="text-slate-300 text-sm">${ipm.cultural_advisory}</span></div>`;
+            }
+            if (ipm.biological_advisory) {
+                html += `<div class="p-3 bg-slate-800 rounded border border-slate-600"><span class="text-blue-400 font-semibold block mb-1" data-i18n="Biological Control">Biological Control</span><span class="text-slate-300 text-sm">${ipm.biological_advisory}</span></div>`;
+            }
+            if (ipm.chemical_name) {
+                html += `<div class="p-4 bg-red-900/20 rounded border border-red-500/50">
+                    <span class="text-red-400 font-semibold block mb-2">Chemical Control (Restricted Use)</span>
+                    <div class="grid grid-cols-2 gap-2 text-sm text-slate-300">
+                        <div><span class="text-slate-500">Agrochemical:</span> ${ipm.chemical_name}</div>
+                        <div><span class="text-slate-500">Dosage:</span> ${ipm.dosage_per_liter} g/ml per Liter</div>
+                        <div class="col-span-2"><span class="text-slate-500">Required PPE:</span> ${ipm.required_ppe}</div>
+                        <div class="text-red-300 font-semibold border border-red-500/30 bg-red-500/10 p-1 rounded text-center mt-2">PHI: ${ipm.phi_days} Days</div>
+                        <div class="text-orange-300 font-semibold border border-orange-500/30 bg-orange-500/10 p-1 rounded text-center mt-2">REI: ${ipm.re_entry_interval_hours} Hours</div>
+                    </div>
+                </div>`;
+            }
+            html += '</div>';
+            return html;
+        }
+
+        // --- MODEL A LOGIC ---
+        document.getElementById('geoBtn').addEventListener('click', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        document.getElementById('latitude').value = position.coords.latitude.toFixed(4);
+                        document.getElementById('longitude').value = position.coords.longitude.toFixed(4);
+                    },
+                    (error) => alert("Error getting location: " + error.message)
+                );
+            }
+        });
+
+        document.getElementById('riskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            
+            const lat = document.getElementById('latitude').value;
+            const lon = document.getElementById('longitude').value;
+            if(!lat || !lon) return alert("Please provide latitude and longitude.");
+
+            btn.disabled = true;
+            btnText.innerText = "Analyzing...";
+
+            const payload = {
+                crop_type: document.getElementById('crop_type').value,
+                crop_variety: document.getElementById('crop_variety').value,
+                growth_stage: document.getElementById('growth_stage').value,
+                soil_type: document.getElementById('soil_type').value,
+                latitude: parseFloat(lat),
+                longitude: parseFloat(lon)
+            };
+
+            try {
+                const lang = document.getElementById('langSelector').value;
+                const response = await fetch('/api/assess-risk', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept-Language': lang
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) throw new Error("Server error");
+                const data = await response.json();
+                
+                document.getElementById('resDisease').innerText = data.disease;
+                document.getElementById('resScore').innerText = `${data.current_risk.toFixed(1)} % Risk Score`;
+                document.getElementById('resSummary').innerText = data.summary;
+                document.getElementById('resRec').innerText = data.recommendation;
+                
+                const badge = document.getElementById('resBadge');
+                badge.innerText = data.risk_level;
+                badge.className = 'inline-block px-4 py-2 rounded-full text-lg font-bold border shadow-[0_0_15px_rgba(0,0,0,0.5)] ';
+                
+                if (data.risk_level === 'HIGH') badge.className += 'bg-red-500/20 text-red-400 border-red-500/50';
+                else if (data.risk_level === 'MEDIUM') badge.className += 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50';
+                else badge.className += 'bg-green-500/20 text-green-400 border-green-500/50';
+
+                const fg = document.getElementById('forecastGrid');
+                fg.innerHTML = '';
+                data.forecast.forEach(f => {
+                    fg.innerHTML += `
+                        <div class="bg-slate-800 border border-slate-700 p-4 rounded-lg flex flex-col justify-between">
+                            <p class="text-slate-400 text-sm font-medium mb-2">${f.day}</p>
+                            <h4 class="text-2xl font-bold ${f.level === 'HIGH' ? 'text-red-400' : f.level === 'MEDIUM' ? 'text-yellow-400' : 'text-green-400'} mb-3">${f.risk}%</h4>
+                            <div class="space-y-1 text-xs text-slate-300">
+                                <div class="flex justify-between"><span>T:</span> <span class="font-medium">${f.temp}&deg;C</span></div>
+                                <div class="flex justify-between"><span>RH:</span> <span class="font-medium">${f.humidity}%</span></div>
+                                <div class="flex justify-between"><span>Rain:</span> <span class="font-medium">${f.rain}mm</span></div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                const fl = document.getElementById('factorsList');
+                fl.innerHTML = '';
+                data.factors.forEach(factor => {
+                    fl.innerHTML += `<li class="flex items-start text-slate-300 text-sm"><span class="mr-2">&bull;</span>${factor}</li>`;
+                });
+                
+                document.getElementById('modelAIpm').innerHTML = renderIPM(data.ipm_advisory);
+                document.getElementById('resultsView').classList.remove('hidden');
+                updateUILanguage(document.getElementById('langSelector').value);
+            } catch (error) {
+                alert("Error analyzing risk.");
+            } finally {
+                btn.disabled = false;
+                btnText.innerText = "Analyze Disease Risk";
+            }
+        });
+
+        // --- DYNAMIC DROPDOWNS FOR PEST SURVEILLANCE ---
+        const pestMapping = {
+            "Cotton": [
+                { name: "Pink Bollworm", metric: "larvae_per_100_plants" }
+            ],
+            "Rice": [
+                { name: "Stem Borer", metric: "percent_dead_hearts" },
+                { name: "Brown Planthopper", metric: "insects_per_hill" }
+            ],
+            "Maize": [
+                { name: "Fall Armyworm", metric: "trap_count_per_week" }
+            ],
+            "Wheat": [
+                { name: "Aphids", metric: "aphids_per_tiller" }
+            ]
+        };
+
+        const cropSelect = document.getElementById('pest_crop_name');
+        const pestSelect = document.getElementById('pest_name');
+        const metricSelect = document.getElementById('pest_metric');
+
+        function updatePests() {
+            const selectedCrop = cropSelect.value;
+            const pests = pestMapping[selectedCrop] || [];
+            
+            pestSelect.innerHTML = '';
+            pests.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.name;
+                opt.textContent = p.name;
+                pestSelect.appendChild(opt);
+            });
+            
+            updateMetric();
+        }
+
+        function updateMetric() {
+            const selectedCrop = cropSelect.value;
+            const selectedPest = pestSelect.value;
+            const pests = pestMapping[selectedCrop] || [];
+            const pestObj = pests.find(p => p.name === selectedPest);
+            
+            if (pestObj) {
+                metricSelect.value = pestObj.metric;
+            }
+        }
+
+        cropSelect.addEventListener('change', updatePests);
+        pestSelect.addEventListener('change', updateMetric);
+        
+        // Initialize on load
+        updatePests();
+
+        // --- PEST SURVEILLANCE LOGIC ---
+        document.getElementById('pestForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('pestSubmitBtn');
+            btn.disabled = true;
+            btn.innerText = "Evaluating...";
+
+            const payload = {
+                field_id: document.getElementById('pest_field_id').value,
+                crop_name: document.getElementById('pest_crop_name').value,
+                pest_name: document.getElementById('pest_name').value,
+                metric_type: document.getElementById('pest_metric').value,
+                observed_value: parseFloat(document.getElementById('pest_obs_val').value)
+            };
+
+            const lang = document.getElementById('langSelector').value;
+            try {
+                const response = await fetch('/api/v1/pest-surveillance/log', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept-Language': lang
+                    },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error("Error evaluating ETL");
+                
+                const data = await response.json();
+
+                document.getElementById('pestObserved').innerText = `${data.observed_value}`;
+                document.getElementById('pestAdvisory').innerText = data.advisory;
+                
+                const badge = document.getElementById('pestBadge');
+                badge.innerText = data.status;
+                badge.className = 'px-4 py-2 rounded-full text-sm font-bold border ';
+                
+                if (data.status === 'ETL_BREACH') badge.className += 'bg-red-500/20 text-red-400 border-red-500/50';
+                else if (data.status === 'MONITOR') badge.className += 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50';
+                else badge.className += 'bg-green-500/20 text-green-400 border-green-500/50';
+
+                document.getElementById('pestIpm').innerHTML = renderIPM(data.ipm_advisory);
+
+                document.getElementById('pestResultsView').classList.remove('hidden');
+                updateUILanguage(document.getElementById('langSelector').value);
+                
+                // Also refresh history if it's visible
+                if (!document.getElementById('pestHistoryView').classList.contains('hidden')) {
+                    document.getElementById('viewHistoryBtn').click();
+                }
+
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Evaluate ETL Risk";
+            }
+        });
+
+        document.getElementById('viewHistoryBtn').addEventListener('click', async () => {
+            const field_id = document.getElementById('pest_field_id').value;
+            if(!field_id) return alert("Enter a Field ID first.");
+
+            try {
+                const response = await fetch(`/api/v1/pest-surveillance/history/${field_id}`);
+                if (!response.ok) throw new Error("Error fetching history");
+                
+                const data = await response.json();
+                
+                document.getElementById('historyFieldId').innerText = `ID: ${field_id}`;
+                const tbody = document.getElementById('pestHistoryTable');
+                tbody.innerHTML = '';
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-4 text-center text-slate-500">No logs found for this field.</td></tr>`;
+                } else {
+                    data.forEach(log => {
+                        const date = new Date(log.timestamp).toLocaleString();
+                        let statusColor = 'text-green-400';
+                        if(log.status === 'ETL_BREACH') statusColor = 'text-red-400';
+                        if(log.status === 'MONITOR') statusColor = 'text-yellow-400';
+
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-slate-800">
+                                <td class="px-4 py-3 whitespace-nowrap">${date}</td>
+                                <td class="px-4 py-3">${log.pest_name}</td>
+                                <td class="px-4 py-3 font-medium">${log.observed_value}</td>
+                                <td class="px-4 py-3 font-bold ${statusColor}">${log.status}</td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                document.getElementById('pestHistoryView').classList.remove('hidden');
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+        
+        // --- EXPERT REFERRAL JS LOGIC ---
+        const tabReferral = document.getElementById('tabReferral');
+        const sectionReferral = document.getElementById('sectionReferral');
+
+        // Update tab listeners
+        // --- GEOSPATIAL HOTSPOTS JS LOGIC ---
+        const tabHotspots = document.getElementById('tabHotspots');
+        const sectionHotspots = document.getElementById('sectionHotspots');
+        let mapInitialized = false;
+        let map = null;
+
+        function initMap() {
+            if (mapInitialized) return;
+            map = L.map('hotspotMap').setView([19.7515, 75.7139], 7);
+            
+            // Standard OSM tiles with CSS inversion for dark theme (No API Key Required)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            loadMapData();
+            loadDistrictSummary();
+            mapInitialized = true;
+        }
+
+        async function loadMapData() {
+            try {
+                // Load heatmap points
+                const heatRes = await fetch('/api/v1/hotspots/heatmap-points');
+                const heatPoints = await heatRes.json();
+                
+                // Add heatmap layer
+                L.heatLayer(heatPoints, {
+                    radius: 25, 
+                    blur: 15, 
+                    maxZoom: 10,
+                    gradient: {0.4: 'blue', 0.6: 'lime', 0.8: 'yellow', 1.0: 'red'}
+                }).addTo(map);
+
+                // Load geojson for markers
+                const geoRes = await fetch('/api/v1/hotspots/geojson');
+                const geoData = await geoRes.json();
+
+                L.geoJSON(geoData, {
+                    pointToLayer: function (feature, latlng) {
+                        let color = '#22c55e'; // green
+                        if (feature.properties.severity === 'CRITICAL') color = '#ef4444'; // red
+                        else if (feature.properties.severity === 'HIGH') color = '#f97316'; // orange
+
+                        return L.circleMarker(latlng, {
+                            radius: 6,
+                            fillColor: color,
+                            color: '#fff',
+                            weight: 1,
+                            opacity: 1,
+                            fillOpacity: 0.8
+                        });
+                    },
+                    onEachFeature: function (feature, layer) {
+                        const p = feature.properties;
+                        const popupContent = `
+                            <div class="text-sm">
+                                <strong class="text-slate-800 text-base">${p.pathogen}</strong><br/>
+                                <span class="text-slate-600">Crop:</span> ${p.crop}<br/>
+                                <span class="text-slate-600">Severity:</span> 
+                                <span class="font-bold ${p.severity==='CRITICAL'?'text-red-600':p.severity==='HIGH'?'text-orange-500':'text-green-600'}">${p.severity}</span><br/>
+                                <span class="text-slate-600">Type:</span> ${p.incident_type}<br/>
+                                <span class="text-slate-600">District:</span> ${p.district}<br/>
+                            </div>
+                        `;
+                        layer.bindPopup(popupContent);
+                    }
+                }).addTo(map);
+
+                // Re-apply translations for dynamic popup content (if any have data-i18n, though popups are created on click)
+                updateUILanguage(document.getElementById('langSelector').value);
+
+            } catch (e) {
+                console.error("Error loading map data", e);
+            }
+        }
+
+        async function loadDistrictSummary() {
+            try {
+                const res = await fetch('/api/v1/hotspots/district-summary');
+                const data = await res.json();
+                
+                const tbody = document.getElementById('districtSummaryTable');
+                tbody.innerHTML = '';
+                
+                data.forEach(d => {
+                    let alertColor = 'text-green-400';
+                    let alertBg = 'bg-green-500/20 border-green-500/50';
+                    
+                    if (d.alert_status === 'CRITICAL') {
+                        alertColor = 'text-red-400';
+                        alertBg = 'bg-red-500/20 border-red-500/50';
+                    } else if (d.alert_status === 'WATCH') {
+                        alertColor = 'text-yellow-400';
+                        alertBg = 'bg-yellow-500/20 border-yellow-500/50';
+                    }
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-800">
+                            <td class="px-4 py-3 font-medium text-white">${d.district}</td>
+                            <td class="px-4 py-3">${d.active_outbreaks}</td>
+                            <td class="px-4 py-3">${d.dominant_pathogen}</td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-1 rounded text-xs font-bold border ${alertBg} ${alertColor}">
+                                    ${d.alert_status}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                console.error("Error loading district summary", e);
+            }
+        }
+
+        // --- UPDATE ALL TABS LOGIC ---
+        function hideAllSections() {
+            sectionModelA.classList.add('hidden');
+            sectionPest.classList.add('hidden');
+            sectionVision.classList.add('hidden');
+            sectionReferral.classList.add('hidden');
+            sectionHotspots.classList.add('hidden');
+            sectionLearning.classList.add('hidden');
+
+            const allTabs = [tabModelA, tabPest, tabVision, tabReferral, tabHotspots, tabLearning];
+            allTabs.forEach(t => {
+                t.classList.remove('text-emerald-400', 'border-emerald-400', 'text-blue-400', 'border-blue-400', 'text-cyan-400', 'border-cyan-400', 'text-purple-400', 'border-purple-400', 'text-orange-400', 'border-orange-400', 'text-pink-400', 'border-pink-400');
+                t.classList.add('text-slate-400', 'border-transparent');
+            });
+        }
+
+        tabModelA.addEventListener('click', () => {
+            hideAllSections();
+            tabModelA.classList.remove('text-slate-400', 'border-transparent');
+            tabModelA.classList.add('text-emerald-400', 'border-emerald-400');
+            sectionModelA.classList.remove('hidden');
+        });
+
+        tabPest.addEventListener('click', () => {
+            hideAllSections();
+            tabPest.classList.remove('text-slate-400', 'border-transparent');
+            tabPest.classList.add('text-blue-400', 'border-blue-400');
+            sectionPest.classList.remove('hidden');
+        });
+
+        tabVision.addEventListener('click', () => {
+            hideAllSections();
+            tabVision.classList.remove('text-slate-400', 'border-transparent');
+            tabVision.classList.add('text-cyan-400', 'border-cyan-400');
+            sectionVision.classList.remove('hidden');
+        });
+
+        tabReferral.addEventListener('click', () => {
+            hideAllSections();
+            tabReferral.classList.remove('text-slate-400', 'border-transparent');
+            tabReferral.classList.add('text-purple-400', 'border-purple-400');
+            sectionReferral.classList.remove('hidden');
+        });
+
+        // Referral Geo Location
+        document.getElementById('refGeoBtn').addEventListener('click', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        document.getElementById('ref_lat').value = position.coords.latitude.toFixed(4);
+                        document.getElementById('ref_lon').value = position.coords.longitude.toFixed(4);
+                    },
+                    (error) => alert("Error getting location: " + error.message)
+                );
+            }
+        });
+
+        // Submit Referral Form
+        document.getElementById('referralForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('refSubmitBtn');
+            btn.disabled = true;
+            btn.innerText = "Routing to lab...";
+
+            const payload = {
+                farmer_name: document.getElementById('ref_farmer').value,
+                phone_number: document.getElementById('ref_phone').value,
+                field_id: 'Auto', // could be dynamically pulled
+                crop_name: document.getElementById('ref_crop').value,
+                reported_symptoms: document.getElementById('ref_symptoms').value,
+                ai_prediction: 'Suspected Late Blight (Model A)',
+                ai_confidence: 0.85,
+                latitude: parseFloat(document.getElementById('ref_lat').value),
+                longitude: parseFloat(document.getElementById('ref_lon').value)
+            };
+
+            try {
+                const response = await fetch('/api/v1/referral/create-ticket', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error("Error creating ticket");
+                
+                const data = await response.json();
+
+                document.getElementById('refTicketId').innerText = data.ticket_code;
+                document.getElementById('refLab').innerText = data.assigned_lab;
+                document.getElementById('refDist').innerText = data.distance_km;
+                document.getElementById('refContact').innerText = data.lab_contact;
+                document.getElementById('refGuidelines').innerText = data.packaging_guidelines;
+                
+                document.getElementById('refResultsView').classList.remove('hidden');
+                updateUILanguage(document.getElementById('langSelector').value);
+
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Submit Referral Ticket";
+            }
+        });
+
+        tabHotspots.addEventListener('click', () => {
+            hideAllSections();
+            tabHotspots.classList.remove('text-slate-400', 'border-transparent');
+            tabHotspots.classList.add('text-orange-400', 'border-orange-400');
+            sectionHotspots.classList.remove('hidden');
+            // Leaflet requires invalidateSize if initialized while hidden
+            if (!mapInitialized) {
+                initMap();
+            } else {
+                setTimeout(() => map.invalidateSize(), 100);
+            }
+        });
+
+    
+        // ─── VISION AI (MODEL B) TAB ─────────────────────────────────────────────
+
+        // Image preview
+        const dropZone = document.getElementById('dropZone');
+        const imageInput = document.getElementById('imageInput');
+        const previewImage = document.getElementById('previewImage');
+        const dropPlaceholder = document.getElementById('dropPlaceholder');
+        const analyzeBtn = document.getElementById('analyzeImageBtn');
+        const visionBtnText = document.getElementById('visionBtnText');
+        let selectedFile = null;
+
+        dropZone.addEventListener('click', () => imageInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-cyan-500');
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('border-cyan-500');
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-cyan-500');
+            const file = e.dataTransfer.files[0];
+            if (file) handleFileSelect(file);
+        });
+
+        imageInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) handleFileSelect(e.target.files[0]);
+        });
+
+        function handleFileSelect(file) {
+            if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type)) {
+                alert('Please upload a JPEG or PNG image.');
+                return;
+            }
+            selectedFile = file;
+            const url = URL.createObjectURL(file);
+            previewImage.src = url;
+            previewImage.classList.remove('hidden');
+            dropPlaceholder.classList.add('hidden');
+            analyzeBtn.disabled = false;
+            visionBtnText.innerText = 'Analyze Leaf Image';
+        }
+
+        analyzeBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+            analyzeBtn.disabled = true;
+            visionBtnText.innerText = 'Analyzing...';
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const resp = await fetch('/api/v1/vision/analyze-image', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!resp.ok) {
+                    const err = await resp.json();
+                    throw new Error(err.detail || 'Server error');
+                }
+                const data = await resp.json();
+
+                // Disease name + badge
+                document.getElementById('visionDisease').innerText = data.display_name;
+                document.getElementById('visionConf').innerText = 'Confidence: ' + data.confidence_pct;
+
+                const badge = document.getElementById('visionBadge');
+                if (data.is_healthy) {
+                    badge.innerText = 'HEALTHY';
+                    badge.className = 'inline-block px-4 py-2 rounded-full text-lg font-bold border bg-green-500/20 text-green-400 border-green-500/50';
+                } else {
+                    badge.innerText = 'DISEASE DETECTED';
+                    badge.className = 'inline-block px-4 py-2 rounded-full text-lg font-bold border bg-red-500/20 text-red-400 border-red-500/50';
+                }
+
+                // Expert review alert
+                const expertAlert = document.getElementById('expertAlert');
+                if (data.requires_expert_review) {
+                    expertAlert.classList.remove('hidden');
+                } else {
+                    expertAlert.classList.add('hidden');
+                }
+
+                // Top-3
+                const top3 = document.getElementById('top3Container');
+                top3.innerHTML = '';
+                data.top3.forEach(p => {
+                    const pct = (p.confidence * 100).toFixed(1);
+                    const barWidth = Math.round(p.confidence * 100);
+                    top3.innerHTML += `
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-slate-300">${p.rank}. ${p.display_name}</span>
+                                <span class="font-bold text-white">${pct}%</span>
+                            </div>
+                            <div class="w-full bg-slate-700 rounded-full h-2">
+                                <div class="h-2 rounded-full ${p.rank === 1 ? 'bg-cyan-400' : 'bg-slate-500'}" style="width: ${barWidth}%"></div>
+                            </div>
+                        </div>`;
+                });
+
+                // IPM link
+                const ipmCard = document.getElementById('visionIpmCard');
+                const ipmText = document.getElementById('visionIpmText');
+                if (data.ipm_lookup) {
+                    ipmText.innerText = 'Crop: ' + data.ipm_lookup.crop + '   |   Pest/Disease: ' + data.ipm_lookup.pest + '   — Use the Pest Surveillance tab to get the full ICAR IPM advisory for this condition.';
+                    ipmCard.classList.remove('hidden');
+                } else {
+                    ipmCard.classList.add('hidden');
+                }
+
+                document.getElementById('visionResultsView').classList.remove('hidden');
+
+            } catch (err) {
+                alert('Vision AI Error: ' + err.message);
+            } finally {
+                analyzeBtn.disabled = false;
+                visionBtnText.innerText = 'Analyze Leaf Image';
+            }
+        });
+
+        // Go to referral form button
+        document.getElementById('goToReferralBtn').addEventListener('click', () => {
+            hideAllSections();
+            tabReferral.classList.remove('text-slate-400', 'border-transparent');
+            tabReferral.classList.add('text-purple-400', 'border-purple-400');
+            sectionReferral.classList.remove('hidden');
+        });
+
+        
+        // ─── ACTIVE LEARNING TAB ─────────────────────────────────────────────
+        const tabLearning = document.getElementById('tabLearning');
+        const sectionLearning = document.getElementById('sectionLearning');
+        
+        tabLearning.addEventListener('click', () => {
+            hideAllSections();
+            tabLearning.classList.remove('text-slate-400', 'border-transparent');
+            tabLearning.classList.add('text-pink-400', 'border-pink-400');
+            sectionLearning.classList.remove('hidden');
+        });
+
+        document.getElementById('btnExportWeather').addEventListener('click', async () => {
+            document.getElementById('exportStatus').innerText = 'Exporting Weather Dataset...';
+            document.getElementById('exportStatus').classList.remove('hidden');
+            try {
+                const res = await fetch('/api/v1/learning/export-dataset/WEATHER_RISK');
+                const data = await res.json();
+                document.getElementById('exportStatus').innerText = 'Export complete! Saved to: ' + data.export_path;
+            } catch(e) {
+                document.getElementById('exportStatus').innerText = 'Error: ' + e;
+            }
+        });
+
+        document.getElementById('btnExportVision').addEventListener('click', async () => {
+            document.getElementById('exportStatus').innerText = 'Exporting Vision Images...';
+            document.getElementById('exportStatus').classList.remove('hidden');
+            try {
+                const res = await fetch('/api/v1/learning/export-dataset/IMAGE_VISION');
+                const data = await res.json();
+                document.getElementById('exportStatus').innerText = 'Export complete! Saved to: ' + data.export_path;
+            } catch(e) {
+                document.getElementById('exportStatus').innerText = 'Error: ' + e;
+            }
+        });
+
+        const uiTranslations = {"Crop Health & Pest Surveillance System": {"mr": "पीक आरोग्य आणि कीड पाळत ठेवणे प्रणाली", "hi": "फसल स्वास्थ्य और कीट निगरानी प्रणाली"}, "Unified Dashboard: Disease Risk Forecasting & Pest ETL Rule Engine": {"mr": "एकात्मिक डॅशबोर्ड: रोग धोका अंदाज आणि कीड ETL नियम", "hi": "एकीकृत डैशबोर्ड: रोग जोखिम पूर्वानुमान और कीट ETL नियम"}, "Language:": {"mr": "भाषा:", "hi": "भाषा:"}, "Disease Risk (Model A)": {"mr": "रोग धोका (मॉडेल A)", "hi": "रोग जोखिम (मॉडल A)"}, "Pest Surveillance (ETL)": {"mr": "कीड पाळत ठेवणे (ETL)", "hi": "कीट निगरानी (ETL)"}, "Expert Referral (Lab Routing)": {"mr": "तज्ञ संदर्भ (लॅब)", "hi": "विशेषज्ञ संदर्भ (लैब)"}, "Geospatial Hotspots": {"mr": "भौगोलिक हॉटस्पॉट्स", "hi": "भू-स्थानिक हॉटस्पॉट"}, "Field Parameters": {"mr": "शेत परिमाण", "hi": "खेत पैरामीटर"}, "Crop Type": {"mr": "पिकाचा प्रकार", "hi": "फसल का प्रकार"}, "Crop Variety": {"mr": "पिकाची जात", "hi": "फसल की किस्म"}, "Growth Stage": {"mr": "वाढीचा टप्पा", "hi": "विकास चरण"}, "Soil Type": {"mr": "मातीचा प्रकार", "hi": "मिट्टी का प्रकार"}, "Location": {"mr": "स्थान", "hi": "स्थान"}, "Detect Location": {"mr": "स्थान शोधा", "hi": "स्थान का पता लगाएं"}, "Analyze Disease Risk": {"mr": "रोग धोक्याचे विश्लेषण करा", "hi": "रोग जोखिम का विश्लेषण करें"}, "Current Disease Risk": {"mr": "सध्याचा रोग धोका", "hi": "वर्तमान रोग जोखिम"}, "Executive Summary": {"mr": "कार्यकारी सारांश", "hi": "कार्यकारी सारांश"}, "Actionable Advisory": {"mr": "कृती करण्यायोग्य सल्ला", "hi": "कार्रवाई योग्य सलाह"}, "Cultural Control": {"mr": "सांस्कृतिक नियंत्रण", "hi": "सांस्कृतिक नियंत्रण"}, "Biological Control": {"mr": "जैविक नियंत्रण", "hi": "जैविक नियंत्रण"}, "Chemical Control": {"mr": "रासायनिक नियंत्रण", "hi": "रासायनिक नियंत्रण"}, "4-Day Trajectory (Weather features)": {"mr": "४-दिवसीय हवामान अंदाज", "hi": "४-दिवसीय मौसम प्रक्षेपवक्र"}, "Model Factors (XGBoost Inputs)": {"mr": "मॉडेल घटक (XGBoost)", "hi": "मॉडल कारक (XGBoost)"}, "Log Sensor/Trap Data": {"mr": "सेन्सर/ट्रॅप डेटा नोंदवा", "hi": "सेंसर/ट्रैप डेटा लॉग करें"}, "Field ID": {"mr": "शेत आयडी", "hi": "खेत आईडी"}, "Pest": {"mr": "कीड", "hi": "कीट"}, "Metric Type (Auto-mapped)": {"mr": "मेट्रिक प्रकार", "hi": "मीट्रिक प्रकार"}, "Observed Value": {"mr": "निरीक्षण केलेले मूल्य", "hi": "देखा गया मूल्य"}, "Evaluate ETL Risk": {"mr": "ETL धोक्याचे मूल्यांकन करा", "hi": "ETL जोखिम का मूल्यांकन करें"}, "View Field History": {"mr": "शेताचा इतिहास पहा", "hi": "खेत का इतिहास देखें"}, "ICAR ETL Evaluation Result": {"mr": "ICAR ETL मूल्यांकन निकाल", "hi": "ICAR ETL मूल्यांकन परिणाम"}, "Recommended Action": {"mr": "शिफारस केलेली कृती", "hi": "अनुशंसित कार्रवाई"}, "Escalate to Lab / Expert": {"mr": "लॅब / तज्ञाकडे पाठवा", "hi": "लैब / विशेषज्ञ को भेजें"}, "Farmer Name": {"mr": "शेतकऱ्याचे नाव", "hi": "किसान का नाम"}, "Phone Number": {"mr": "फोन नंबर", "hi": "फ़ोन नंबर"}, "Crop": {"mr": "पीक", "hi": "फसल"}, "Symptoms": {"mr": "लक्षणे", "hi": "लक्षण"}, "Farmer Location": {"mr": "शेतकऱ्याचे स्थान", "hi": "किसान का स्थान"}, "Submit Referral Ticket": {"mr": "संदर्भ तिकीट सबमिट करा", "hi": "रेफरल टिकट सबमिट करें"}, "Ticket Created Successfully": {"mr": "तिकीट यशस्वीरित्या तयार केले", "hi": "टिकट सफलतापूर्वक बनाया गया"}, "Ticket ID": {"mr": "तिकीट आयडी", "hi": "टिकट आईडी"}, "Routing Info": {"mr": "राउटिंग माहिती", "hi": "रूटिंग जानकारी"}, "Physical Sample Packaging Guidelines": {"mr": "नमुना पॅकेजिंग मार्गदर्शक तत्त्वे", "hi": "भौतिक नमूना पैकेजिंग दिशानिर्देश"}, "Live Epidemiological Map (Maharashtra)": {"mr": "थेट रोगराई नकाशा (महाराष्ट्र)", "hi": "लाइव महामारी विज्ञान मानचित्र (महाराष्ट्र)"}, "District Surveillance Summary": {"mr": "जिल्हा पाळत ठेवणे सारांश", "hi": "जिला निगरानी सारांश"}, "District": {"mr": "जिल्हा", "hi": "जिला"}, "Active Outbreaks": {"mr": "सक्रिय प्रादुर्भाव", "hi": "सक्रिय प्रकोप"}, "Dominant Threat": {"mr": "प्रमुख धोका", "hi": "प्रमुख खतरा"}, "Alert Status": {"mr": "अलर्ट स्थिती", "hi": "अलर्ट स्थिति"}};
+        
+        function updateUILanguage(lang) {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (lang === 'en') {
+                    el.innerText = key;
+                } else if (uiTranslations[key] && uiTranslations[key][lang]) {
+                    el.innerText = uiTranslations[key][lang];
+                }
+            });
+        }
+        
+        document.getElementById('langSelector').addEventListener('change', (e) => {
+            updateUILanguage(e.target.value);
+        });
+        
+        // Initial setup
+        updateUILanguage(document.getElementById('langSelector').value);
+    
+    </script>
+<script>
+    // HISTORY TAB LOGIC
+    const tabHistory = document.getElementById('tabHistory');
+    const sectionHistory = document.getElementById('sectionHistory');
+    
+    if (tabHistory) {
+        tabHistory.addEventListener('click', () => {
+            hideAllSections();
+            sectionHistory.classList.remove('hidden');
+            tabHistory.classList.add('text-emerald-700', 'border-emerald-600');
+            tabHistory.classList.remove('text-slate-500', 'border-transparent');
+            fetchHistory();
+        });
+    }
+    
+    // Patch hideAllSections globally
+    const oldHide = hideAllSections;
+    hideAllSections = function() {
+        oldHide();
+        if (sectionHistory) sectionHistory.classList.add('hidden');
+        if (tabHistory) {
+            tabHistory.classList.remove('text-emerald-700', 'border-emerald-600');
+            tabHistory.classList.add('text-slate-500', 'border-transparent');
+        }
+    };
+    
+
+    window.allHistoryTickets = [];
+    async function renderHistoryTickets() {
+        const list = document.getElementById('historyList');
+        if (!list) return;
+        list.innerHTML = '';
+        
+        let tickets = window.allHistoryTickets || [];
+        
+        const search = (document.getElementById('farmerSearch')?.value || '').toLowerCase();
+        const status = document.getElementById('farmerStatus')?.value || 'ALL';
+        const sort = document.getElementById('farmerSort')?.value || 'DESC';
+        
+        tickets = tickets.filter(t => {
+            const matchSearch = t.ticket_code.toLowerCase().includes(search) || t.crop_name.toLowerCase().includes(search);
+            const matchStatus = status === 'ALL' || t.status === status || (status === 'EXPERT_DIAGNOSED' && t.status !== 'PENDING_REVIEW');
+            return matchSearch && matchStatus;
+        });
+        
+        tickets.sort((a, b) => sort === 'DESC' ? b.id - a.id : a.id - b.id);
+        
+        if (tickets.length === 0) {
+            list.innerHTML = '<div class="text-center py-8 text-slate-500">No consultation history found matching filters.</div>';
+            return;
+        }
+        
+        for (let t of tickets) {
+            let detail = t;
+            try {
+                const detRes = await fetch(`/api/v1/referral/ticket-status/${t.ticket_code}`);
+                detail = await detRes.json();
+            } catch(e) {}
+            
+            let reviewHtml = '';
+            if (detail.reviews && detail.reviews.length > 0) {
+                const rev = detail.reviews[0];
+                reviewHtml = `
+                <div class="mt-4 p-4 bg-emerald-50 rounded-xl border border-emerald-200 relative">
+                    <div class="absolute -top-3 right-4 bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-sm flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[12px]">verified</span> KVK Official Review
+                    </div>
+                    <p class="text-sm font-semibold text-emerald-900 flex items-center gap-2"><span class="material-symbols-outlined text-sm">science</span> Expert: ${rev.expert_name}</p>
+                    <p class="text-sm text-emerald-800 mt-2 font-medium">Confirmed Diagnosis: <span class="text-red-700">${rev.confirmed_diagnosis}</span></p>
+                    <div class="mt-3 text-sm text-emerald-900 bg-white p-4 rounded-lg border border-emerald-100 whitespace-pre-line shadow-inner font-mono text-xs">
+                        ${rev.custom_advisory}
+                    </div>
+                </div>`;
+            }
+            
+            let statusColor = t.status === 'PENDING_REVIEW' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-emerald-100 text-emerald-800 border-emerald-300';
+            
+            const card = document.createElement('div');
+            card.className = "p-6 bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow";
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 tracking-widest uppercase">Ticket ID</span>
+                        <h3 class="text-lg font-bold text-slate-800 font-mono">${t.ticket_code}</h3>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold border ${statusColor}">
+                        ${t.status.replace(/_/g, ' ')}
+                    </span>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm mb-2">
+                    <div><span class="text-slate-500">Crop:</span> <span class="font-semibold text-slate-800">${t.crop_name}</span></div>
+                    <div><span class="text-slate-500">AI Diagnosis:</span> <span class="font-semibold text-slate-800">${t.ai_prediction}</span></div>
+                </div>
+                <div class="text-sm mb-4"><span class="text-slate-500">Reported Symptoms:</span> <span class="text-slate-800 italic">"${t.reported_symptoms}"</span></div>
+                ${reviewHtml}
+            `;
+            list.appendChild(card);
+        }
+        
+        
+    }
+
+    async function fetchHistory() {
+        const loading = document.getElementById('historyLoading');
+        loading.classList.remove('hidden');
+        
+        try {
+            const res = await fetch('/api/v1/referral/tickets/all');
+            window.allHistoryTickets = await res.json();
+            loading.classList.add('hidden');
+            renderHistoryTickets();
+            return;
+
+            
+            // For each ticket, fetch full details to get reviews
+            
+        } catch (e) {
+            loading.classList.add('hidden');
+            list.innerHTML = '<div class="text-center py-8 text-red-500">Failed to load history.</div>';
+        }
+    }
+    </script><!-- Farmer Notification Toast -->
+<div id="farmerToast" class="fixed bottom-6 right-6 bg-emerald-600 text-white px-6 py-4 rounded-xl shadow-lg border border-emerald-400 flex items-center gap-3 transition-opacity duration-300 opacity-0 pointer-events-none z-50 font-semibold tracking-wide">
+    <span class="material-symbols-outlined animate-bounce">notifications_active</span>
+    <span id="farmerToastMsg">Notification!</span>
+</div>
+<script>
+    let knownTickets = [];
+    
+    function showFarmerToast(msg) {
+        const t = document.getElementById('farmerToast');
+        if (t) {
+            document.getElementById('farmerToastMsg').innerText = msg;
+            t.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => t.classList.add('opacity-0', 'pointer-events-none'), 8000);
+        }
+    }
+
+    async function pollFarmerNotifications() {
+        try {
+            const res = await fetch('/api/v1/referral/tickets/all');
+            const tickets = await res.json();
+            
+            if (knownTickets.length === 0) {
+                knownTickets = tickets; 
+                return;
+            }
+            
+            // Check for new tickets
+            if (tickets.length > knownTickets.length) {
+                showFarmerToast('Success! Your new ticket has been registered in the system.');
+                knownTickets = tickets;
+                if (!document.getElementById('sectionHistory').classList.contains('hidden')) {
+                    fetchHistory();
+                }
+                return;
+            }
+            
+            // Check for status changes (Admin reviewed it)
+            let statusChanged = false;
+            for (let i = 0; i < tickets.length; i++) {
+                const oldT = knownTickets.find(x => x.id === tickets[i].id);
+                if (oldT && oldT.status === 'PENDING_REVIEW' && tickets[i].status !== 'PENDING_REVIEW') {
+                    showFarmerToast('UPDATE: A KVK Expert has reviewed your ticket! Check the History tab.');
+                    statusChanged = true;
+                }
+            }
+            if (statusChanged && !document.getElementById('sectionHistory').classList.contains('hidden')) {
+                fetchHistory(); // live update the UI
+            }
+            
+            knownTickets = tickets;
+        } catch(e) {}
+    }
+    
+    // Poll every 5 seconds
+    setInterval(pollFarmerNotifications, 5000);
+    setTimeout(pollFarmerNotifications, 1000);
+</script>
+</body>
+</html>

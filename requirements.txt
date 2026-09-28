@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+python-multipart
+
+pyjwt
+passlib[bcrypt]
+onnxruntime
+xgboost
+scikit-learn
+numpy
+Pillow
+websockets

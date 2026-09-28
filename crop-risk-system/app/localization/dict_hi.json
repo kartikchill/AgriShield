@@ -1,0 +1,12 @@
+{
+  "risk_status_safe": "सुरक्षित",
+  "risk_status_monitor": "निगरानी करें",
+  "risk_status_critical": "उच्च जोखिम (तत्काल कार्रवाई आवश्यक)",
+  "crop_cotton": "कपास",
+  "crop_tomato": "टमाटर",
+  "pest_pink_bollworm": "गुलाबी सुंडी",
+  "pest_late_blight": "पछेती झुलसा",
+  "ipm_heading": "एकीकृत कीट प्रबंधन",
+  "ppe_warning": "सुरक्षा किट (दस्ताने, मास्क) पहनना अनिवार्य है।",
+  "phi_warning": "छिड़काव के बाद {days} दिनों तक फसल की कटाई न करें।"
+}
