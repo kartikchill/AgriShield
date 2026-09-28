@@ -1,10 +1,12 @@
 import numpy as np
 import xgboost as xgb
+import os
 import joblib
 
 # Load Model A and Feature Schema globally
-MODEL_PATH = r"D:\PDD2\Model A (dataset)\model_a_risk_predictor.json"
-FEATURES_PATH = r"D:\PDD2\Model A (dataset)\model_a_features.pkl"
+_BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+MODEL_PATH = os.path.join(_BASE_DIR, "Model A (dataset)", "model_a_risk_predictor.json")
+FEATURES_PATH = os.path.join(_BASE_DIR, "Model A (dataset)", "model_a_features.pkl")
 
 # Initialize and load model
 model = xgb.XGBClassifier()

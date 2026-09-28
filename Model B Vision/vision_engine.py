@@ -92,7 +92,8 @@ _TRANSFORMS = T.Compose([
 
 ALLOWED_FORMATS = {"JPEG", "JPG", "PNG", "WEBP"}
 EXPERT_REVIEW_THRESHOLD = 0.70
-MODEL_PATH = Path(r"D:\PDD2\Model B\best_plant_disease_model.pth")
+_BASE_DIR = Path(__file__).resolve().parent.parent
+MODEL_PATH = _BASE_DIR / "Model B" / "best_plant_disease_model.pth"
 
 
 def _build_model(num_classes: int = 23) -> nn.Module:
